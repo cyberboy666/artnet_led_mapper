@@ -50,7 +50,7 @@ class ofApp : public ofBaseApp{
     int inputWidth;
     int inputHeight;
     int framerate=30;
-    int numberStrips=9;
+    int numberStrips=1;
     int selectedInputIndex = 0;
     int canvasWidth=5000;
     int canvasHeight=5000;
@@ -63,7 +63,8 @@ class ofApp : public ofBaseApp{
     // data generated or defaulted
     int grid_index = 0;
     int stripFocus = 0;
-    bool isFullscreen;
+    bool isFullscreen = false;
+    int fullscreenType = 0;
     int stripHeadRadius = 30;
     int ledRadius = 10;
 
@@ -79,7 +80,7 @@ class ofApp : public ofBaseApp{
         float ledSpaceY;
 
 
-        stripData() : numLeds(60), xPos(0), yPos(0), angle(0) {}
+        stripData() : numLeds(60), xPos(0), yPos(1000), angle(0) {}
     };
     vector<stripData> stripDataList;
 

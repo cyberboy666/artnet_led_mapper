@@ -4,8 +4,6 @@
 void ofApp::setup(){
 
     font.load("arial.ttf", 50);
-    fpsFont.load("arial.ttf", 100);
-
 
     ofSetWindowShape(ofGetScreenWidth(), ofGetScreenHeight());
     ofSetFrameRate(framerate);
@@ -27,6 +25,11 @@ void ofApp::setup(){
 
     createInputsList();
     loadInput();
+
+    if(stripDataList.size() == 0){
+        stripData thisStrip;
+        stripDataList.push_back(thisStrip);
+    }
 
     if(isFullscreen){
         ofLog() << "setting main to full screen..";
@@ -119,14 +122,6 @@ void ofApp::drawLineAndCircle(stripData thisStripData, string text,bool isFocus)
      
 }
 
-// void ofApp::sleepMicro(int microSeconds){
-//     uint64_t startTime = ofGetElapsedTimeMicros();
-
-//     // Wait until 5 microseconds have passed
-//     while (ofGetElapsedTimeMicros() - startTime < microSeconds) {
-//         // Empty loop to wait
-//     }
-// }
 
 void ofApp::update(){
 
@@ -167,8 +162,6 @@ void ofApp::update(){
         artnetData[i].allocate(170, 1, OF_PIXELS_RGB);
     }
 
-    // ofLog() << "first pixel has value: " <<  static_cast<int>(colorList[0].r) << ":" <<  static_cast<int>(colorList[0].g) << ":" <<  static_cast<int>(colorList[0].b);
-
     int u = 0;
     int i = 0;
     while (i < colorList.size()) {
@@ -201,6 +194,23 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
 
+    float max_canvas = static_cast<float>MAX(canvasWidth, canvasHeight);
+
+    if(isFullscreen){
+        if(fullscreenType == 1){
+            ofClear(0);
+            innerFbo.draw(0,0, ofGetScreenWidth(), ofGetScreenHeight());
+            if(showFramerate){drawFramerate();}
+            return;
+        }
+        else if(fullscreenType == 2){
+            ofClear(0);
+            mapTest.draw(0, 0, ofGetScreenWidth() * (canvasWidth/ max_canvas ), ofGetScreenHeight() * (canvasHeight/ max_canvas ));
+            if(showFramerate){drawFramerate();}
+            return;
+        }
+    }
+
     printFramerate();
 
     if(!hidePreview){   
@@ -208,7 +218,6 @@ void ofApp::draw(){
     }
 
     if(!hideMaptest){
-        float max_canvas = static_cast<float>MAX(canvasWidth, canvasHeight);
         mapTest.draw(600, 20, (ofGetScreenWidth() / 3) * (canvasWidth/ max_canvas ), (ofGetScreenHeight() / 3) * (canvasHeight/ max_canvas ));
     }
 
@@ -266,8 +275,6 @@ void ofApp::draw(){
             if(ImGui::InputInt("INPUT WIDTH", &inputWidth) || ImGui::InputInt("INPUT HEIGHT", &inputHeight)){
                 innerFbo.allocate(inputWidth, inputHeight, GL_RGB);
                 ndiTexture.allocate(inputWidth, inputHeight, GL_RGBA);
-                ofLog() << "inputWidth is now set to: " << inputWidth;
-                ofLog() << "inputHeight is now set to: " << inputHeight;
                 loadInput();
             }
         }
@@ -289,9 +296,16 @@ void ofApp::draw(){
             vidGrabber.setDesiredFrameRate(framerate);
             ofSetFrameRate(framerate);
             loadInput();
-            ofLog() << "inputWidth is now set to: " << inputWidth;
-            ofLog() << "inputHeight is now set to: " << inputHeight;
         }
+        if(ImGui::Checkbox("fullscreen (press f)", &isFullscreen)){
+            // switch window to fullscreen
+            ofSetFullscreen(isFullscreen);
+        }
+        ImGui::SameLine();
+        // ImGui::Checkbox("show framerate (press r)", &showFramerate);
+        ImGui::RadioButton("display ", &fullscreenType, 0); ImGui::SameLine();
+        ImGui::RadioButton("preview ", &fullscreenType, 1); ImGui::SameLine();
+        ImGui::RadioButton("maptest ", &fullscreenType, 2);
 
         ImGui::SeparatorText("LED STRIPS SETTING");
 
@@ -344,6 +358,12 @@ void ofApp::draw(){
         ImGui::SeparatorText("CANVAS VALUES");
         ImGui::InputInt("CANVAS WIDTH (mm)", &canvasWidth);
         ImGui::InputInt("CANVAS HEIGHT (mm)", &canvasHeight);
+        
+        ImGui::SeparatorText("INTERFACE");
+        if(ImGui::InputInt("SELECTED STRIP", &stripFocus)){
+            if(stripFocus > numberStrips){stripFocus = 0;}
+            else if(stripFocus < 0){stripFocus = numberStrips;}
+        }
         ImGui::Combo("GRID SIZE (mm)", &grid_index, grid_options, IM_ARRAYSIZE(grid_options));
 
         ImGui::SeparatorText("STRIP VALUES");
@@ -388,18 +408,19 @@ void ofApp::loadInput(){
     }
 }
 
-
 void ofApp::drawFramerate(){
     if(showFramerate){
         stringstream info;
         float framerate = roundf(ofGetFrameRate());
         info << "FPS: " << framerate ;
-        ofDrawRectangle(fpsFont.getStringBoundingBox(info.str(), 0, fpsFont.stringHeight(info.str())));
-        ofSetColor(255,0,0);
-        fpsFont.drawString(info.str(), 0, fpsFont.stringHeight(info.str()));
-        ofSetColor(255);
+        ofPushMatrix();
+            ofScale(2, 2);
+            ofDrawRectangle(font.getStringBoundingBox(info.str(), 0, font.stringHeight(info.str())));
+            ofSetColor(255,0,0);
+            font.drawString(info.str(), 0, font.stringHeight(info.str()));
+            ofSetColor(255);
+        ofPopMatrix();
     }
-
 }
 
 void ofApp::printFramerate(){
@@ -487,25 +508,11 @@ void ofApp::keyPressed(ofKeyEventArgs& keyArgs){
         hideConfig = !hideConfig;
     }
     if (keyArgs.key == 'f' || keyArgs.key == 'F') {
+            isFullscreen = !isFullscreen;
             ofSetFullscreen(isFullscreen);
         }
     if (keyArgs.key == 'r' || keyArgs.key == 'R') {
         showFramerate = !showFramerate;
-    }
-    if (keyArgs.key == 'n' || keyArgs.key == 'N') {
-        ndiReceiver.ReceiveImage(ndiTexture);
-        int nsenders = ndiReceiver.GetSenderCount();
-        ofLog() << "ndiReceiver.GetSenderCount(): " << ndiReceiver.GetSenderCount();
-        ofLog() << "ndiReceiver.ReceiverCreated(): " << ndiReceiver.ReceiverCreated();
-        for(int i = 0; i < nsenders; i++){
-            inputType ndiInput;
-            ndiInput.type = "NDI";
-            ndiInput.typeId = i; 
-            // char name[256];
-            // ndiReceiver.GetSenderName(name, 256, i);
-            ndiInput.name = "NDI_" + ofToString(i) + " : " + ndiReceiver.GetSenderName(i);
-            videoInputs.push_back(ndiInput);
-        }
     }
 }
 
@@ -530,27 +537,18 @@ void ofApp::mousePressed(int x, int y, int button) {
     if(hideMaptest){return;}
     ofRectangle fboBounds(600, 20, ofGetScreenWidth() / 3, ofGetScreenHeight() / 3);
     if (!fboBounds.inside(x, y)) {
-        stripFocus = 0;
         return; 
         }
     float max_canvas = static_cast<float>MAX(canvasWidth, canvasHeight);
     float xPos = static_cast<float>(x - 600) / (ofGetScreenWidth() / 3) * max_canvas;
     float yPos = static_cast<float>(y - 20) / (ofGetScreenHeight() / 3) * max_canvas;
-    ofLog() << "xPos: " << xPos;
-    ofLog() << "yPos: " << yPos;
     float headRadius =  static_cast<float>(stripHeadRadius / innerFbo.getWidth()) * max_canvas;
 
     bool isFocused = false;
     for (int i = stripDataList.size(); i >= 1; i--) {
         int distanceX = xPos - stripDataList[i-1].xPos;
         int distanceY = yPos - stripDataList[i-1].yPos;
-        // if(i == 1){
-        //     ofLog() << "stripDataList[i].xPos: " << stripDataList[i].xPos;
-        //     ofLog() << "stripDataList[i].yPos: " << stripDataList[i].yPos;
-        //     ofLog() << "distanceX: " << distanceX;
-        //     ofLog() << "distanceY: " << distanceY;
-        //     ofLog() << "headRadius: " << headRadius;
-        // }
+
         if (distanceX * distanceX + distanceY * distanceY < headRadius * headRadius){
             stripFocus = i;
             isFocused = true;
