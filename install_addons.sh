@@ -4,7 +4,7 @@
 RELATIVE_DIR="../../../addons/"
 
 # List of GitHub repositories you want to clone
-REPOS=("https://github.com/jeffcrouse/ofxJSON" "https://github.com/Daandelange/ofxImGui" "https://github.com/leadedge/ofxNDI" "https://github.com/hiroyuki/ofxArtnet")
+REPOS=("https://github.com/jeffcrouse/ofxJSON" "https://github.com/Daandelange/ofxImGui" "https://github.com/leadedge/ofxNDI" "https://github.com/cyberboy666/ofxArtnet")
 
 # Loop through each repository and clone it into the relative directory
 for repo in "${REPOS[@]}"
