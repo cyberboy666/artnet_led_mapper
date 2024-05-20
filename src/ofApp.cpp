@@ -56,7 +56,7 @@ void ofApp::createInputsList(){
 
     vector<ofVideoDevice> devices = vidGrabber.listDevices();
     for(size_t i = 0; i < devices.size(); i++){
-        if(devices[i].bAvailable){
+        if(devices[i].bAvailable && devices[i].deviceName.find("broadcom") ==  std::string::npos){
             //log the device
             inputType videoInput;
             videoInput.type = "VIDEO";
@@ -235,15 +235,32 @@ void ofApp::draw(){
     window_flags |= ImGuiWindowFlags_NoDocking;
     // window_flags |= ImGuiWindowFlags_UnsavedDocument;
 
-    if(!hideConfig){
     gui.begin();
         const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x, main_viewport->WorkPos.y), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(550, ofGetWindowHeight() - 150), ImGuiCond_FirstUseEver);
         ImGui::Begin("ARTNET_LED_MAPPER SETTINGS", NULL, window_flags);
+        if (ImGui::CollapsingHeader("HELP")){
+            ImGui::Text("MAPPING WITH A MOUSE:");
+            ImGui::BulletText("CLICK on a STRIP HEAD to select it (BLUE/RED larger circle)");
+            ImGui::BulletText("CLICK and drag a STRIP HEAD to position it");
+            ImGui::BulletText("hold SHIFT and drag around to rotate selected STRIP");
+            ImGui::BulletText("or RIGHT CLICK and drag around to rotate selected STRIP");
+            ImGui::Separator();
+            ImGui::Text("MAPPING WITH A KEYBOARD:");
+            ImGui::BulletText("press ALT plus LEFT/RIGHT to select a STRIP");
+            ImGui::BulletText("press ARROW KEYS to position it");
+            ImGui::BulletText("press SHIFT plus UP/DOWN to rotate it");
+            ImGui::BulletText("press SHIFT plus LEFT/RIGHT to subtract/add leds");
+            ImGui::BulletText("press ALT plus UP/DOWN to set grid size (how much each press moves)");
+            ImGui::Separator();
+            ImGui::Text("OTHER KEYBOARD SHORTCUTS:");
+            ImGui::BulletText("press F to toggle ON/OFF FULLSCREEN");
+
+        }
+
         ImGui::SeparatorText("MODE SETTING");
 
-        ImGui::Checkbox("hide this config (press c)", &hideConfig);
         if(ImGui::Button("save config")){
             jsonSave();
         }
@@ -302,11 +319,11 @@ void ofApp::draw(){
             ofSetFullscreen(isFullscreen);
         }
         ImGui::SameLine();
-        // ImGui::Checkbox("show framerate (press r)", &showFramerate);
         ImGui::RadioButton("display ", &fullscreenType, 0); ImGui::SameLine();
         ImGui::RadioButton("preview ", &fullscreenType, 1); ImGui::SameLine();
         ImGui::RadioButton("maptest ", &fullscreenType, 2);
 
+        // ImGui::Checkbox("show framerate (press r)", &showFramerate);
         ImGui::SeparatorText("LED STRIPS SETTING");
 
         ImGui::InputInt("NUMBER OF STRIPS", &numberStrips);
@@ -340,7 +357,10 @@ void ofApp::draw(){
         // output framerate ...
 
         // artsync on/off 
-        ImGui::Checkbox("SEND ARTSYNC", &sendArtSync);
+        if(ImGui::Checkbox("SEND ARTSYNC", &sendArtSync)){
+            artsyncIp = artnetIp;
+            artsyncPort = artnetPort;
+        }
                 // ImGui::SameLine();
         //       
         if(sendArtSync){
@@ -358,7 +378,7 @@ void ofApp::draw(){
         ImGui::SeparatorText("CANVAS VALUES");
         ImGui::InputInt("CANVAS WIDTH (mm)", &canvasWidth);
         ImGui::InputInt("CANVAS HEIGHT (mm)", &canvasHeight);
-        
+
         ImGui::SeparatorText("INTERFACE");
         if(ImGui::InputInt("SELECTED STRIP", &stripFocus)){
             if(stripFocus > numberStrips){stripFocus = 0;}
@@ -381,7 +401,6 @@ void ofApp::draw(){
 
     ImGui::End();
     gui.end();
-    }
 }
 
 
@@ -504,9 +523,6 @@ void ofApp::keyPressed(ofKeyEventArgs& keyArgs){
         else{ grid_index--; }
     }
 
-    if (keyArgs.key == 'c' || keyArgs.key == 'C') {
-        hideConfig = !hideConfig;
-    }
     if (keyArgs.key == 'f' || keyArgs.key == 'F') {
             isFullscreen = !isFullscreen;
             ofSetFullscreen(isFullscreen);
@@ -534,6 +550,12 @@ void ofApp::keyReleased(ofKeyEventArgs& keyArgs) {
 }
 
 void ofApp::mousePressed(int x, int y, int button) {
+    if(button == 1){
+        isFullscreen = !isFullscreen;
+        ofSetFullscreen(isFullscreen);
+        return;
+    }
+    if(button == 2){return;}
     if(hideMaptest){return;}
     ofRectangle fboBounds(600, 20, ofGetScreenWidth() / 3, ofGetScreenHeight() / 3);
     if (!fboBounds.inside(x, y)) {
@@ -565,11 +587,11 @@ void ofApp::mouseDragged(int x, int y, int button) {
     float xPos = static_cast<float>(x - 600) / (ofGetScreenWidth() / 3) * canvasWidth;
     float yPos = static_cast<float>(y - 20) / (ofGetScreenHeight() / 3) * canvasHeight;
 
-    if(!shiftPressed){
+    if(!(shiftPressed || button == 2)){
         stripDataList[stripFocus-1].xPos = (xPos - lastMouseXPos);
         stripDataList[stripFocus-1].yPos = (yPos - lastMouseYPos);
     }
-    else if(shiftPressed){
+    else if(shiftPressed || button == 2){
         int newAngle = glm::degrees(glm::atan((yPos - stripDataList[stripFocus-1].yPos)/(xPos - stripDataList[stripFocus-1].xPos)));
         if(xPos < stripDataList[stripFocus-1].xPos){
             newAngle = newAngle + 180;
@@ -582,7 +604,6 @@ void ofApp::mouseDragged(int x, int y, int button) {
 void ofApp::jsonLoad(string path){
     if (json.open(path)) {
         // Access configuration values
-        hideConfig = json["hide_config"].asBool();
         hideMaptest = json["hide_maptest"].asBool();
         hidePreview = json["hide_preview"].asBool();
         setResolutions = json["set_resolutions"].asBool();
@@ -615,7 +636,6 @@ void ofApp::jsonLoad(string path){
 }
 
 void ofApp::jsonSave(){
-        json["hide_config"] = hideConfig;
         json["hide_maptest"] = hideMaptest;
         json["hide_preview"] = hidePreview;
         json["set_resolutions"] = setResolutions;

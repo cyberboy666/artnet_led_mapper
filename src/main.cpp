@@ -4,9 +4,16 @@
 //========================================================================
 int main( ){
 
+	#ifdef PROJECT_TARGET_OPENGLES
+		ofLog() << "setting up gles";
+		ofGLESWindowSettings settings;
+		settings.glesVersion=2;
+	#else
+		ofLog() << "setting up glsl";
+		ofGLFWWindowSettings settings;
+		settings.setGLVersion(3,2);
+	#endif
 
-	ofGLFWWindowSettings settings;
-	settings.setGLVersion(3,2);
 	shared_ptr<ofAppBaseWindow> mainWindow = ofCreateWindow(settings);
 
     ofAppGLFWWindow* win;

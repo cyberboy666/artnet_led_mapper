@@ -7,6 +7,7 @@
 #include "ofxNDI.h" // NDI classes
 #include "ofxArtnet.h"
 
+// #define PROJECT_TARGET_OPENGLES
 
 class ofApp : public ofBaseApp{
 	public:
@@ -42,7 +43,6 @@ class ofApp : public ofBaseApp{
     string glType;
 
 	// data in config
-    bool hideConfig=false;
     bool hideMaptest = false;
     bool hidePreview = false;
     bool setResolutions = false;
@@ -80,7 +80,7 @@ class ofApp : public ofBaseApp{
         float ledSpaceY;
 
 
-        stripData() : numLeds(60), xPos(0), yPos(1000), angle(0) {}
+        stripData() : numLeds(60), xPos(1000), yPos(1000), angle(0) {}
     };
     vector<stripData> stripDataList;
 
