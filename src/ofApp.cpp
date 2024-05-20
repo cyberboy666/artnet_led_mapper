@@ -56,7 +56,7 @@ void ofApp::createInputsList(){
 
     vector<ofVideoDevice> devices = vidGrabber.listDevices();
     for(size_t i = 0; i < devices.size(); i++){
-        if(devices[i].bAvailable && devices[i].deviceName.find("broadcom") ==  std::string::npos){
+        if(devices[i].bAvailable && devices[i].deviceName.find("bcm2835-isp") ==  std::string::npos){
             //log the device
             inputType videoInput;
             videoInput.type = "VIDEO";
