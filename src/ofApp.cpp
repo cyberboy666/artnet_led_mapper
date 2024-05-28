@@ -344,14 +344,37 @@ void ofApp::draw(){
         ImGui::Combo("LED SPACINGS (mm)", &spacing_index, spacing_options, IM_ARRAYSIZE(spacing_options));
 
         char artnetIpChar[20];
-        std::strncpy(artnetIpChar, artnetIp.c_str(), sizeof(artnetIpChar) - 1);
+        std::strncpy(artnetIpChar, artnetIpTemp.c_str(), sizeof(artnetIpChar) - 1);
         if(ImGui::InputText("TARGET IP", artnetIpChar, IM_ARRAYSIZE(artnetIpChar))){
-            artnetIp = artnetIpChar;
-            artnet.setup(artnetIp, artnetPort);
+            artnetIpTemp = artnetIpChar;
         }
-        if(ImGui::InputInt("TARGET PORT", &artnetPort)){
-            artnet.setup(artnetIp, artnetPort);
+        // ImGui::SameLine();
+
+        ImGui::InputInt("TARGET PORT", &artnetPortTemp);
+
+        bool updateNetworkSettings = artnetPortTemp != artnetPort || artnetIp != artnetIpTemp;
+        if(updateNetworkSettings){
+            ImVec4 buttonColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+            ImGui::PushStyleColor(ImGuiCol_Button, buttonColor);
+            }
+
+        if(ImGui::Button("UPDATE TARGET IP AND PORT")){
+            ofLog() << "artnetIpTemp is " << artnetIpTemp;
+            bool isValidIp = artnet.setup(artnetIpTemp, artnetPortTemp);
+            ofLog() << "isValidIp " << isValidIp;
+            if(isValidIp){
+                artnetIp = artnetIpTemp;
+                artnetPort = artnetPortTemp;
+            }
+            else{
+                artnet.setup(artnetIp, artnetPort);
+                artnetIpTemp = artnetIp;
+                artnetPortTemp = artnetPort;
+            }
         }
+
+        if(updateNetworkSettings){ImGui::PopStyleColor();}
+
         // gateway ?
 
         // output framerate ...
@@ -364,16 +387,43 @@ void ofApp::draw(){
                 // ImGui::SameLine();
         //       
         if(sendArtSync){
+
             char artsyncIpChar[20];
-            std::strncpy(artsyncIpChar, artsyncIp.c_str(), sizeof(artsyncIpChar) - 1);
+            std::strncpy(artsyncIpChar, artsyncIpTemp.c_str(), sizeof(artsyncIpChar) - 1);
             if(ImGui::InputText("ARTSYNC IP", artsyncIpChar, IM_ARRAYSIZE(artsyncIpChar))){
-                artsyncIp = artsyncIpChar;
-                artsync.setup(artsyncIp, artsyncPort);
+                artsyncIpTemp = artsyncIpChar;
             }
-            if(ImGui::InputInt("ARTSYNC PORT", &artsyncPort)){
-                artsync.setup(artsyncIp, artsyncPort);
+
+            ImGui::InputInt("ARTSYNC PORT", &artsyncPortTemp);
+
+            bool updateNetworkSettings = artsyncPortTemp != artsyncPort || artsyncIp != artsyncIpTemp;
+            if(updateNetworkSettings){
+                ImVec4 buttonColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+                ImGui::PushStyleColor(ImGuiCol_Button, buttonColor);
+                }
+
+            if(ImGui::Button("UPDATE ARTSYNC IP AND PORT")){
+                ofLog() << "artsyncIpTemp is " << artsyncIpTemp;
+                bool isValidIp = artsync.setup(artsyncIpTemp, artsyncPortTemp);
+                ofLog() << "isValidIp " << isValidIp;
+                if(isValidIp){
+                    artsyncIp = artsyncIpTemp;
+                    artsyncPort = artsyncPortTemp;
+                }
+                else{
+                    artsync.setup(artsyncIp, artsyncPort);
+                    artsyncIpTemp = artsyncIp;
+                    artsyncPortTemp = artsyncPort;
+                }
             }
+
+            if(updateNetworkSettings){ImGui::PopStyleColor();}
         }
+
+
+
+
+
 
         ImGui::SeparatorText("CANVAS VALUES");
         ImGui::InputInt("CANVAS WIDTH (mm)", &canvasWidth);

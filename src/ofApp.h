@@ -68,6 +68,11 @@ class ofApp : public ofBaseApp{
     int stripHeadRadius = 30;
     int ledRadius = 10;
 
+    string artnetIpTemp = "127.0.0.1";
+    int artnetPortTemp = 6454;
+    string artsyncIpTemp = "127.0.0.1";
+    int artsyncPortTemp = 6454;
+
     // strip data
     struct stripData{
         int numLeds;
