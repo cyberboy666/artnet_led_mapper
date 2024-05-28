@@ -272,6 +272,17 @@ void ofApp::draw(){
         if(ImGui::Button("refresh inputs")){
             createInputsList();
         }
+        if(!hasNDILoaded){
+        ImGui::SameLine();
+        ImGui::TextDisabled("(?)");
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort) && ImGui::BeginTooltip())
+        {
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            ImGui::TextUnformatted("NDI SDK MAY NOT BE LOADED");
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
+        }
 
         const char** input_names = new const char*[videoInputs.size()];
         for (int i = 0; i < videoInputs.size(); i++)
