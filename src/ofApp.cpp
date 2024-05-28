@@ -420,11 +420,6 @@ void ofApp::draw(){
             if(updateNetworkSettings){ImGui::PopStyleColor();}
         }
 
-
-
-
-
-
         ImGui::SeparatorText("CANVAS VALUES");
         ImGui::InputInt("CANVAS WIDTH (mm)", &canvasWidth);
         ImGui::InputInt("CANVAS HEIGHT (mm)", &canvasHeight);
@@ -634,6 +629,10 @@ void ofApp::mousePressed(int x, int y, int button) {
 
 void ofApp::mouseDragged(int x, int y, int button) {
     if(hideMaptest){return;}
+    ofRectangle fboBounds(600, 20, ofGetScreenWidth() / 3, ofGetScreenHeight() / 3);
+    if (!fboBounds.inside(x, y)) {
+        return; 
+        }
     float xPos = static_cast<float>(x - 600) / (ofGetScreenWidth() / 3) * canvasWidth;
     float yPos = static_cast<float>(y - 20) / (ofGetScreenHeight() / 3) * canvasHeight;
 
