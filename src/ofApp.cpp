@@ -25,6 +25,7 @@ void ofApp::setup(){
 
     createInputsList();
     loadInput();
+    createInputsList(); // not sure why but this is ensure the ndi options are in the list on startup...
 
     if(stripDataList.size() == 0){
         stripData thisStrip;
@@ -39,10 +40,10 @@ void ofApp::setup(){
     artnet.setup(artnetIp, artnetPort);
     artsync.setup(artsyncIp, artsyncPort);
     
+    
 }
 
 void ofApp::createInputsList(){
-
     videoInputs = {};
 
     for (size_t i = 0; i < testcards.size(); i++)
@@ -87,7 +88,8 @@ void ofApp::createInputsList(){
     ofLog() << "hasNDILoaded: " << hasNDILoaded;
     
     int nsenders = ndiReceiver.GetSenderCount();
-    ofLog() << "ndiReceiver.GetSenderCount(): " << ndiReceiver.GetSenderCount();
+    ofLog() << "ndiReceiver.GetSenderCount(): " << nsenders;
+
     for(int i = 0; i < nsenders; i++){
        inputType ndiInput;
         ndiInput.width = inputWidth;
