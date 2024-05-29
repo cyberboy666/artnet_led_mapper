@@ -2,6 +2,10 @@
 .DS_Store
 Thumbs.db
 
+openFrameworks-Info.plist
+of.entitlements
+Project.xcconfig
+
 icon.rc
 .vs
 
@@ -11,6 +15,7 @@ bin/*
 # But do not ignore bin/data/ and its contents
 !bin/data/
 !bin/data/**
+bin/data/.DS_Store
 
 # Ignore openFrameworks project-specific files
 bin/data/config.json
