@@ -48,6 +48,8 @@ void ofApp::createInputsList(){
     for (size_t i = 0; i < testcards.size(); i++)
     {
         inputType imageInput;
+        imageInput.width = inputWidth;
+        imageInput.height = inputHeight;
         imageInput.type = "TESTCARD";
         imageInput.typeId = i;
         imageInput.name = "TESTCARD_" + ofToString(i);
@@ -59,6 +61,15 @@ void ofApp::createInputsList(){
         if(devices[i].bAvailable && devices[i].deviceName.find("bcm2835-isp") ==  std::string::npos){
             //log the device
             inputType videoInput;
+            if(devices[i].formats.size() > 0){
+                videoInput.width = devices[i].formats[0].width;
+                videoInput.height = devices[i].formats[0].height;
+            }
+            else{
+                videoInput.width = inputWidth;
+                videoInput.height = inputHeight;
+            }
+
             videoInput.type = "VIDEO";
             videoInput.typeId = devices[i].id ;
             videoInput.name = "VIDEO_" + ofToString(devices[i].id) + " :" + devices[i].deviceName;
@@ -79,6 +90,8 @@ void ofApp::createInputsList(){
     ofLog() << "ndiReceiver.GetSenderCount(): " << ndiReceiver.GetSenderCount();
     for(int i = 0; i < nsenders; i++){
        inputType ndiInput;
+        ndiInput.width = inputWidth;
+        ndiInput.height = inputHeight;
         ndiInput.type = "NDI";
         ndiInput.typeId = i;
         ndiInput.name = "NDI_" + ofToString(i) + " : " + ndiReceiver.GetSenderName(i);
@@ -462,11 +475,13 @@ void ofApp::draw(){
 
 
 void ofApp::loadInput(){
+    inputWidth = videoInputs[selectedInputIndex].width;
+    inputHeight = videoInputs[selectedInputIndex].height;
     if(videoInputs[selectedInputIndex].type == "VIDEO"){
         if(vidGrabber.isInitialized()){vidGrabber.close();}
         vidGrabber.setDesiredFrameRate(framerate);
         vidGrabber.setDeviceID(videoInputs[selectedInputIndex].typeId);
-        vidGrabber.initGrabber(inputWidth, inputHeight);
+        vidGrabber.setup(inputWidth, inputHeight);
     }
     else{vidGrabber.close();}
     if(videoInputs[selectedInputIndex].type == "TESTCARD"){
