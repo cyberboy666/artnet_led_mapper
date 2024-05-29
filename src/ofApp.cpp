@@ -25,6 +25,7 @@ void ofApp::setup(){
 
     createInputsList();
     loadInput();
+    createInputsList(); // not sure why but this is ensure the ndi options are in the list on startup...
 
     if(stripDataList.size() == 0){
         stripData thisStrip;
@@ -39,15 +40,17 @@ void ofApp::setup(){
     artnet.setup(artnetIp, artnetPort);
     artsync.setup(artsyncIp, artsyncPort);
     
+    
 }
 
 void ofApp::createInputsList(){
-
     videoInputs = {};
 
     for (size_t i = 0; i < testcards.size(); i++)
     {
         inputType imageInput;
+        imageInput.width = inputWidth;
+        imageInput.height = inputHeight;
         imageInput.type = "TESTCARD";
         imageInput.typeId = i;
         imageInput.name = "TESTCARD_" + ofToString(i);
@@ -59,6 +62,15 @@ void ofApp::createInputsList(){
         if(devices[i].bAvailable && devices[i].deviceName.find("bcm2835-isp") ==  std::string::npos){
             //log the device
             inputType videoInput;
+            if(devices[i].formats.size() > 0){
+                videoInput.width = devices[i].formats[0].width;
+                videoInput.height = devices[i].formats[0].height;
+            }
+            else{
+                videoInput.width = inputWidth;
+                videoInput.height = inputHeight;
+            }
+
             videoInput.type = "VIDEO";
             videoInput.typeId = devices[i].id ;
             videoInput.name = "VIDEO_" + ofToString(devices[i].id) + " :" + devices[i].deviceName;
@@ -76,9 +88,12 @@ void ofApp::createInputsList(){
     ofLog() << "hasNDILoaded: " << hasNDILoaded;
     
     int nsenders = ndiReceiver.GetSenderCount();
-    ofLog() << "ndiReceiver.GetSenderCount(): " << ndiReceiver.GetSenderCount();
+    ofLog() << "ndiReceiver.GetSenderCount(): " << nsenders;
+
     for(int i = 0; i < nsenders; i++){
        inputType ndiInput;
+        ndiInput.width = inputWidth;
+        ndiInput.height = inputHeight;
         ndiInput.type = "NDI";
         ndiInput.typeId = i;
         ndiInput.name = "NDI_" + ofToString(i) + " : " + ndiReceiver.GetSenderName(i);
@@ -272,6 +287,17 @@ void ofApp::draw(){
         if(ImGui::Button("refresh inputs")){
             createInputsList();
         }
+        if(!hasNDILoaded){
+        ImGui::SameLine();
+        ImGui::TextDisabled("(?)");
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort) && ImGui::BeginTooltip())
+        {
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            ImGui::TextUnformatted("NDI SDK MAY NOT BE LOADED");
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
+        }
 
         const char** input_names = new const char*[videoInputs.size()];
         for (int i = 0; i < videoInputs.size(); i++)
@@ -344,14 +370,37 @@ void ofApp::draw(){
         ImGui::Combo("LED SPACINGS (mm)", &spacing_index, spacing_options, IM_ARRAYSIZE(spacing_options));
 
         char artnetIpChar[20];
-        std::strncpy(artnetIpChar, artnetIp.c_str(), sizeof(artnetIpChar) - 1);
+        std::strncpy(artnetIpChar, artnetIpTemp.c_str(), sizeof(artnetIpChar) - 1);
         if(ImGui::InputText("TARGET IP", artnetIpChar, IM_ARRAYSIZE(artnetIpChar))){
-            artnetIp = artnetIpChar;
-            artnet.setup(artnetIp, artnetPort);
+            artnetIpTemp = artnetIpChar;
         }
-        if(ImGui::InputInt("TARGET PORT", &artnetPort)){
-            artnet.setup(artnetIp, artnetPort);
+        // ImGui::SameLine();
+
+        ImGui::InputInt("TARGET PORT", &artnetPortTemp);
+
+        bool updateNetworkSettings = artnetPortTemp != artnetPort || artnetIp != artnetIpTemp;
+        if(updateNetworkSettings){
+            ImVec4 buttonColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+            ImGui::PushStyleColor(ImGuiCol_Button, buttonColor);
+            }
+
+        if(ImGui::Button("UPDATE TARGET IP AND PORT")){
+            ofLog() << "artnetIpTemp is " << artnetIpTemp;
+            bool isValidIp = artnet.setup(artnetIpTemp, artnetPortTemp);
+            ofLog() << "isValidIp " << isValidIp;
+            if(isValidIp){
+                artnetIp = artnetIpTemp;
+                artnetPort = artnetPortTemp;
+            }
+            else{
+                artnet.setup(artnetIp, artnetPort);
+                artnetIpTemp = artnetIp;
+                artnetPortTemp = artnetPort;
+            }
         }
+
+        if(updateNetworkSettings){ImGui::PopStyleColor();}
+
         // gateway ?
 
         // output framerate ...
@@ -364,15 +413,37 @@ void ofApp::draw(){
                 // ImGui::SameLine();
         //       
         if(sendArtSync){
+
             char artsyncIpChar[20];
-            std::strncpy(artsyncIpChar, artsyncIp.c_str(), sizeof(artsyncIpChar) - 1);
+            std::strncpy(artsyncIpChar, artsyncIpTemp.c_str(), sizeof(artsyncIpChar) - 1);
             if(ImGui::InputText("ARTSYNC IP", artsyncIpChar, IM_ARRAYSIZE(artsyncIpChar))){
-                artsyncIp = artsyncIpChar;
-                artsync.setup(artsyncIp, artsyncPort);
+                artsyncIpTemp = artsyncIpChar;
             }
-            if(ImGui::InputInt("ARTSYNC PORT", &artsyncPort)){
-                artsync.setup(artsyncIp, artsyncPort);
+
+            ImGui::InputInt("ARTSYNC PORT", &artsyncPortTemp);
+
+            bool updateNetworkSettings = artsyncPortTemp != artsyncPort || artsyncIp != artsyncIpTemp;
+            if(updateNetworkSettings){
+                ImVec4 buttonColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+                ImGui::PushStyleColor(ImGuiCol_Button, buttonColor);
+                }
+
+            if(ImGui::Button("UPDATE ARTSYNC IP AND PORT")){
+                ofLog() << "artsyncIpTemp is " << artsyncIpTemp;
+                bool isValidIp = artsync.setup(artsyncIpTemp, artsyncPortTemp);
+                ofLog() << "isValidIp " << isValidIp;
+                if(isValidIp){
+                    artsyncIp = artsyncIpTemp;
+                    artsyncPort = artsyncPortTemp;
+                }
+                else{
+                    artsync.setup(artsyncIp, artsyncPort);
+                    artsyncIpTemp = artsyncIp;
+                    artsyncPortTemp = artsyncPort;
+                }
             }
+
+            if(updateNetworkSettings){ImGui::PopStyleColor();}
         }
 
         ImGui::SeparatorText("CANVAS VALUES");
@@ -406,11 +477,13 @@ void ofApp::draw(){
 
 
 void ofApp::loadInput(){
+    inputWidth = videoInputs[selectedInputIndex].width;
+    inputHeight = videoInputs[selectedInputIndex].height;
     if(videoInputs[selectedInputIndex].type == "VIDEO"){
         if(vidGrabber.isInitialized()){vidGrabber.close();}
         vidGrabber.setDesiredFrameRate(framerate);
         vidGrabber.setDeviceID(videoInputs[selectedInputIndex].typeId);
-        vidGrabber.initGrabber(inputWidth, inputHeight);
+        vidGrabber.setup(inputWidth, inputHeight);
     }
     else{vidGrabber.close();}
     if(videoInputs[selectedInputIndex].type == "TESTCARD"){
@@ -584,6 +657,10 @@ void ofApp::mousePressed(int x, int y, int button) {
 
 void ofApp::mouseDragged(int x, int y, int button) {
     if(hideMaptest){return;}
+    ofRectangle fboBounds(600, 20, ofGetScreenWidth() / 3, ofGetScreenHeight() / 3);
+    if (!fboBounds.inside(x, y)) {
+        return; 
+        }
     float xPos = static_cast<float>(x - 600) / (ofGetScreenWidth() / 3) * canvasWidth;
     float yPos = static_cast<float>(y - 20) / (ofGetScreenHeight() / 3) * canvasHeight;
 
