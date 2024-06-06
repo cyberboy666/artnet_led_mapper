@@ -10,8 +10,8 @@ _an open-source cross-platform application for creating addressable led installa
 
 ## features
 
-- _input video_ from connected devices (webcams, capture cards etc) or over NDI
-- _output [artnet](https://art-net.org.uk/)_ across multiple universes to a hardware controller that can drive addressable leds 
+- _input video_ from connected devices (webcams, capture cards etc) or over [NDI](https://ndi.video/tools/)
+- _output [artnet](https://art-net.org.uk/)_ across multiple universes to a [hardware controller](https://github.com/cyberboy666/ethernet_led_controller) that can drive addressable leds 
 - create an _led mapping_ using measurements, mouse, keyboard or directly editing human readable config.json
 - runs on linux, windows, mac and sbc's such as raspberry and orange pi's
 - code is open-source so you can modify it / add features that suit your needs
