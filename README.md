@@ -1,6 +1,6 @@
 # artnet_led_mapper
 
-_an open-source cross-platform application for creating addressable led instalations_
+_an open-source cross-platform application for creating addressable led installation_
 
 ![image](https://github.com/cyberboy666/artnet_led_mapper/assets/12017938/b4277895-0828-4e6f-a25c-114f80a7b6fe)
 
@@ -20,7 +20,7 @@ _an open-source cross-platform application for creating addressable led instalat
 
 this application is a companion to my [hardware led controller](https://github.com/cyberboy666/ethernet_led_controller) that drives addressable leds from an [artnet](https://art-net.org.uk/) network connection. it was built for [lateral movement](https://cyberboy666.com/lateralmovement/) club nights such as seen here:
 
-![image](https://github.com/cyberboy666/artnet_led_mapper/assets/12017938/5ca32a03-e786-472d-a8b2-1b83208a5eeb)
+![image](http://underscores.shop/wp-content/uploads/2024/06/leds.gif)
 
 
 you can find some more background on this install and process here: [WORKS IN PROGRESS 04 - talk about controlling addressable leds for art installation](https://videos.scanlines.xyz/w/p/tUhDfYqJJPfjovscNMvFRL) 
@@ -88,7 +88,7 @@ after you have physically set up your led strips you will need to take some meas
 
 _NOTE: the position measurements do not need to be exact - this will likely be adjusted slightly during calibration
 
-[put image showing measurements here ?]
+![image](https://github.com/cyberboy666/artnet_led_mapper/assets/12017938/795c407c-b45c-4d24-a2ae-dddbf2db46cb)
 
 once these are entered the __MAPTEST__ view in the app - black box with blue/red circles/pixel lines representing led strips - should be looking like your tv wall
 
