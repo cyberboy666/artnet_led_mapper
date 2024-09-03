@@ -1,10 +1,10 @@
 # artnet_led_mapper
 
-_an open-source cross-platform application for creating addressable led installation_
+_an open-source cross-platform application for creating addressable led installations_
 
 ![image](https://github.com/cyberboy666/artnet_led_mapper/assets/12017938/b4277895-0828-4e6f-a25c-114f80a7b6fe)
 
-- this software is distributed by __UNDERSCORES__ - compiled downloads for linux, windows, mac and arm64 are available to purchase from underscores.shop [put link to shop page here]
+- this software is distributed by __UNDERSCORES__ - compiled downloads for ubuntu, windows, mac and arm64 are available to purchase from underscores.shop [put link to shop page here]
 - the source code can be viewed and compiled [here](/src/)
 - consider [donating](https://opencollective.com/underscores) to the underscores project to help us continue creating for the commons
 
@@ -12,7 +12,7 @@ _an open-source cross-platform application for creating addressable led installa
 
 - _input video_ from connected devices (webcams, capture cards etc) or over [NDI](https://ndi.video/tools/)
 - _output [artnet](https://art-net.org.uk/)_ across multiple universes to a [hardware controller](https://github.com/cyberboy666/ethernet_led_controller) that can drive addressable leds 
-- create an _led mapping_ using measurements, mouse, keyboard or directly editing human readable config.json
+- create an _led mapping_ using measurements, mouse, keyboard or directly editing human readable `config.json`
 - runs on linux, windows, mac and sbc's such as raspberry and orange pi's
 - code is open-source so you can modify it / add features that suit your needs
 
@@ -33,7 +33,8 @@ you can find some more background on this install and process here: [WORKS IN PR
 
 <details><summary>hardware options</summary>
 
-![image](https://github.com/cyberboy666/artnet_led_mapper/assets/12017938/bdb0a07a-c5ab-4fef-b998-f9529223bc16)
+![image](https://github.com/user-attachments/assets/616580a4-0e9c-4b91-84fc-cb6a2cb923ef)
+
 
 to map video onto addressable leds there are a few parts needed:
 
