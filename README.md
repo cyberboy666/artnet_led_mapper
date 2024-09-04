@@ -33,7 +33,7 @@ you can find some more background on this install and process here: [WORKS IN PR
 
 <details><summary>hardware options</summary>
 
-![image](https://github.com/user-attachments/assets/616580a4-0e9c-4b91-84fc-cb6a2cb923ef)
+![image](https://github.com/user-attachments/assets/c4c2a7b4-106d-4561-a1f3-448f070d23c1)
 
 
 to map video onto addressable leds there are a few parts needed:
