@@ -68,6 +68,8 @@ class ofApp : public ofBaseApp{
     int stripHeadRadius = 30;
     int ledRadius = 10;
 
+    int brightnessPercent = 100;
+
     string artnetIpTemp = "127.0.0.1";
     int artnetPortTemp = 6454;
     string artsyncIpTemp = "127.0.0.1";

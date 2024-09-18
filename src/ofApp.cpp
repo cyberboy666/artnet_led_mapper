@@ -182,7 +182,11 @@ void ofApp::update(){
     while (i < colorList.size()) {
         if (i % 170 == 0 && i != 0) {u++;}
         if (u < artnetData.size()) {
-            artnetData[u].setColor(i % 170, 0, colorList[i]);
+            ofColor color = colorList[i];
+            color.r = color.r * brightnessPercent / 100;
+            color.g = color.g * brightnessPercent / 100;
+            color.b = color.b * brightnessPercent / 100;
+            artnetData[u].setColor(i % 170, 0, color);
         } else {
             ofLogError() << "Universe index out of bounds: " << u;
             break;
@@ -369,12 +373,18 @@ void ofApp::draw(){
 
         ImGui::Combo("LED SPACINGS (mm)", &spacing_index, spacing_options, IM_ARRAYSIZE(spacing_options));
 
+        if(ImGui::InputInt("BRIGHTNESS %", &brightnessPercent)){
+            if(brightnessPercent > 100){brightnessPercent = 100;}
+            else if(brightnessPercent < 0){brightnessPercent = 0;}
+        }
+
         char artnetIpChar[20];
         std::strncpy(artnetIpChar, artnetIpTemp.c_str(), sizeof(artnetIpChar) - 1);
         if(ImGui::InputText("TARGET IP", artnetIpChar, IM_ARRAYSIZE(artnetIpChar))){
             artnetIpTemp = artnetIpChar;
         }
         // ImGui::SameLine();
+
 
         ImGui::InputInt("TARGET PORT", &artnetPortTemp);
 
